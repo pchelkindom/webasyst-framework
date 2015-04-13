@@ -211,7 +211,6 @@ abstract class waRightConfig
                                 updateIndicator.call(cb2[0]);
                             }
                         });
-                    cb.attr("disabled", false);
                     if (cb.val() !== "") {
                     cb.parents("table.c-access-app")
                         .find("select[name^=\""+cb.attr("name").replace(/\.all]/,"")+"\"]").each(function (k,cb2) {

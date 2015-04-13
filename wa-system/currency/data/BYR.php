@@ -2,7 +2,7 @@
 
 return array(
     'code' => 'BYR',
-    'sign' => 'Br', //BYR?
+    'sign' => 'Br',
     'title' => 'Belarusian ruble',
     'name' => array(
         array('rouble', 'roubles'),
