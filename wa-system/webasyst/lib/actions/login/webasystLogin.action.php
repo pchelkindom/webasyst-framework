@@ -48,21 +48,53 @@ class webasystLoginAction extends waLoginAction
 
     }
 
-    protected function afterAuth()
-    {
+    protected function afterAuth() {
         $this->getStorage()->remove('auth_login');
         $redirect = $this->getConfig()->getCurrentUrl();
         $backend_url = $this->getConfig()->getBackendUrl(true);
-        if (!$redirect || $redirect === $backend_url) {
+        if (!$redirect || $redirect === $backend_url)
+        {
             $redirect = $this->getUser()->getLastPage();
         }
-        if (!$redirect || substr($redirect, 0, strlen($backend_url) + 1) == $backend_url.'?') {
+        if (!$redirect || substr($redirect, 0, strlen($backend_url) + 1) == $backend_url.'?')
+        {
             $redirect = $backend_url;
         }
-        
-        wa()->getUser()->setSettings('webasyst', 'backend_url', $this->getConfig()->getHostUrl() . $backend_url);
-        
-        $this->redirect(array('url' => $redirect));
+        if (!empty($_SERVER['HTTP_CLIENT_IP']))
+        {
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR']))
+        {
+            $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        } else
+        {
+            $ip = $_SERVER['REMOTE_ADDR'];
+        }
+        $ip_true = 0;
+        $user_true = 0;
+        $model = new waUserModel();
+        $result = $model->query("SELECT * FROM wa_login_ip");
+        foreach ($result as $row)
+        {
+            $users = unserialize($row['users']);
+            if (in_array($this->getUser()->get('id'), $users))
+            {
+                $user_true = 1;
+                if ($ip == $row['ip'])
+                {
+                    $ip_true = 1;
+                    // var_dump($ip_true);
+                }
+            }
+        }
+        wa()->getUser()->setSettings('webasyst', 'backend_url', $this->getConfig()->getHostUrl().$backend_url);
+        if ($ip_true == 0 && $user_true == 0)
+            $this->redirect(array('url' => $redirect));
+        if ($ip_true == 0 && $user_true == 1)
+            $this->getUser()->logout();
+        if ($ip_true == 1 && $user_true == 1)
+            $this->redirect(array('url' => $redirect));
+        //$this->redirect(array('url' => $redirect));
     }
 
     public function getTitle()
